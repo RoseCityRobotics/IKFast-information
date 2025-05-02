@@ -1,5 +1,5 @@
 # IKFast Inverse Kinematics Parameterizations Documentation
-
+# *AI GENERATED*
 IKFast is a powerful tool capable of generating efficient, analytical Inverse Kinematics (IK) solvers for robotic manipulators. A key aspect of using IKFast is selecting the correct *parameterization type*, which defines the specific kinematic problem the solver will address based on the constraints placed on the end-effector's pose. This document details the various IK parameterization types available in IKFast, helping developers choose the most suitable one for their application.
 
 ---
