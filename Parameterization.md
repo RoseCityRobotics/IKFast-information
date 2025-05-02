@@ -115,3 +115,100 @@ These types appear less frequently or might be specific implementations. Detaile
 ---
 
 Choosing the correct IKFast parameterization type is crucial for efficient and effective robot motion planning. By selecting the type that most closely matches the task's constraints, you ensure the solver focuses on the relevant degrees of freedom, leading to faster computation and more appropriate solutions.
+
+
+
+
+
+# ChatGPT summary (not in markdown, but more detailed)
+IKFast Inverse Kinematics Parameterizations
+This document provides detailed descriptions of the inverse kinematics (IK) types supported by IKFast. Each parameterization describes a specific subset of constraints in 3D space, allowing robotic applications to solve for joint configurations that satisfy different task requirements.
+The goal is to help developers determine the most appropriate IK type for their application and understand how each formulation constrains the end-effector pose.
+
+Standard IKFast Parameterizations
+Transform6D
+	•	Degrees of Freedom Constrained: 6 (full 3D position + orientation)
+	•	Description: Solves the complete transformation: position (x, y, z) and orientation (roll, pitch, yaw).
+	•	Use Cases: General-purpose manipulation, such as grasping, pick-and-place, or assembly tasks.
+	•	Notes: This is the most constrained form. The solver must compute joint values that produce an exact match with the target pose.
+Translation3D
+	•	Degrees of Freedom Constrained: 3 (position only)
+	•	Description: Constrains the end-effector to reach a specific 3D position, with no regard for orientation.
+	•	Use Cases: Position-based operations like pushing buttons, contact without alignment, or flexible grasping.
+	•	Notes: Ideal for tasks that don’t care about how the tool is rotated.
+Rotation3D
+	•	Degrees of Freedom Constrained: 3 (orientation only)
+	•	Description: Forces the end-effector to match a target orientation. The location of the end-effector is unconstrained.
+	•	Use Cases: Pointing a camera or aligning a welding torch.
+	•	Notes: Should be used when aiming is important but the physical position of the end-effector isn't.
+Ray4D
+	•	Degrees of Freedom Constrained: 4
+	•	Description: Constrains the end-effector to point along a ray (given by a point and direction vector) but allows movement along the ray.
+	•	Use Cases: Camera look-at, laser range finders, or tools that need to face a direction but have positional freedom.
+	•	Notes: Useful for underconstrained problems.
+
+Direction-Based Parameterizations
+Direction3D
+	•	Degrees of Freedom Constrained: 2 (direction of tool axis)
+	•	Description: Requires the end-effector to aim a specific axis (usually Z) in a given direction. The origin is unconstrained.
+	•	Use Cases: Laser pointing, tool orientation control.
+	•	Notes: Best used when only directional orientation matters and position is irrelevant.
+Lookat3D
+	•	Degrees of Freedom Constrained: 3 (2 orientation + 1 position)
+	•	Description: Like Direction3D, but also constrains the origin of the end-effector to lie somewhere on a ray toward the look-at point.
+	•	Use Cases: Camera targeting, turret-based vision systems.
+	•	Notes: Requires both directional alignment and partial spatial constraint.
+
+Translation + Direction Parameterizations
+TranslationDirection5D
+	•	Degrees of Freedom Constrained: 5 (3 position + 2 orientation)
+	•	Description: Forces the end-effector to a specific position and aligns one of its axes (typically Z) with a given direction.
+	•	Use Cases: End-effectors that must approach from a specific angle but allow rotation about that axis.
+	•	Notes: Leaves one rotational DoF free, often used for rotationally symmetric tools.
+TranslationXY2D
+	•	Degrees of Freedom Constrained: 2 (X and Y position)
+	•	Description: Constrains only the X and Y coordinates of the end-effector, ignoring Z and orientation.
+	•	Use Cases: Planar tasks such as 2D pick-and-place on a table.
+	•	Notes: Suitable for SCARA arms or mobile bases with planar constraints.
+TranslationLocalGlobal6D
+	•	Degrees of Freedom Constrained: 6
+	•	Description: Applies a local transformation (from a tool or child frame) relative to a global pose, then solves full 6D IK.
+	•	Use Cases: Tool chaining, calibration tasks, frame-to-frame transformations.
+	•	Notes: Advanced use only. Requires clear understanding of frame relationships.
+
+Translation + Axis-Angle Parameterizations
+TranslationXAxisAngle4D
+	•	Degrees of Freedom Constrained: 4 (3 position + 1 angle)
+	•	Description: Matches position and constrains rotation about the X-axis of the end-effector.
+	•	Use Cases: Tool insertion where twist around X must be managed.
+	•	Notes: Leaves rotation around X unconstrained but controls how the tool faces around that axis.
+TranslationYAxisAngle4D
+	•	Degrees of Freedom Constrained: 4
+	•	Same as above, but for the Y-axis.
+TranslationZAxisAngle4D
+	•	Degrees of Freedom Constrained: 4
+	•	Same as above, but for the Z-axis.
+
+Translation + Axis-Angle + Normal Vector Constraints
+TranslationXAxisAngleZNorm4D
+	•	Degrees of Freedom Constrained: 4
+	•	Description: Constrains X-axis rotation and requires the Z-axis of the tool to align with a given normal vector.
+	•	Use Cases: Suction or magnetic pick-up with an approach angle and a preferred tool orientation.
+TranslationYAxisAngleXNorm4D
+	•	Degrees of Freedom Constrained: 4
+	•	Description: Controls Y-axis angle and aligns X-axis with a desired normal.
+	•	Use Cases: Horizontal insertions or side-approaches with alignment constraints.
+TranslationZAxisAngleYNorm4D
+	•	Degrees of Freedom Constrained: 4
+	•	Description: Controls rotation around Z and aligns Y-axis with a normal.
+	•	Use Cases: Overhead insertions with tool roll control.
+
+Developer Guidance
+Choose the parameterization based on how constrained your task is:
+	•	Use Transform6D for precision manipulation
+	•	Use Translation3D when the tool must reach a point, but orientation is flexible
+	•	Use Rotation3D when aiming is critical
+	•	Use TranslationDirection5D for contact tasks with directional approach
+	•	Use Ray4D, Lookat3D, or Direction3D for vision and alignment problems
+	•	Use AxisAngle+Normal variants for semi-constrained insertion tasks
+Understanding the right IK type allows for better solver speed, improved robustness, and better task generalization.
